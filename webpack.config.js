@@ -1,8 +1,12 @@
 const path = require('path');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 
-
-module.exports = {
+module.exports = (env) => {
+    const isProduction = env === 'production';
+    const CSSExtract = new ExtractTextPlugin('styles.css');
+    console.log('env', env);
+    return {
     mode: 'development',
     entry: './src/app.js',
     output: {
@@ -13,18 +17,22 @@ module.exports = {
         rules: [{
             loader: 'babel-loader', //tells webpack to run our js files through babel
             test: /\.js$/,
-            exclude: /node_molude/
+            exclude: /node_moludes/
         }, {
             test: /\.s?css$/, //question mark makes the 's' optional so we can look for css and scss files.
-            use: ['style-loader',
-            'css-loader',
-            'sass-loader'
-        ]
+            use: CSSExtract.extract({
+                use: [
+                    'css-loader',
+                    'sass-loader'
+                ]
+            })
         }]
     },
-    devtool: 'cheap-module-eval-source-map', //Allows the browser to show the specific source of an element/error in the console
+    plugins: [CSSExtract],
+    devtool: isProduction ? 'source-map' : 'inline-source-map', //Allows the browser to show the specific source of an element/error in the console
     devServer: {
         contentBase: path.join(__dirname, 'public'),
         historyApiFallback: true
     }
+};
 };
